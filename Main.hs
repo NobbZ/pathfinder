@@ -61,7 +61,13 @@ growTree b = (Walkable (findStart b) Start (growTree' b ((findStart b) +: Up)) (
                        | otherwise    = Walkable (x,y) (b!!x!!y) (growTree' b ((x,y) +: Up)) (growTree' b ((x,y) +: Right)) (growTree' b ((x,y) +: Down)) (growTree' b ((x,y) +: Left))
 
 cut :: WayTree -> WayTree
-cut = id
+cut (Walkable c Start up right down left) = Walkable c Start (cut' [c] up) (cut' [c] right) (cut' [c] down) (cut' [c] left)
+  where
+    cut' _ (NotWalkable) = NotWalkable
+    cut' _ (Walkable c Exit _ _ _ _) = Walkable c Exit NotWalkable NotWalkable NotWalkable NotWalkable
+    cut' cs (Walkable (x,y) t up right down left) | x < 0 || y < 0  = NotWalkable
+                                                  | (x,y) `elem` cs = NotWalkable
+                                                  | otherwise       = Walkable (x,y) t (cut' ((x,y):cs) up) (cut' ((x,y):cs) right) (cut' ((x,y):cs) down) (cut' ((x,y):cs) left)
 
 toList :: WayTree -> [Coords]
 toList = const [(0,0)]
