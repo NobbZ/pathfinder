@@ -70,5 +70,8 @@ cut (Walkable c Start up right down left) = Walkable c Start (cut' [c] up) (cut'
                                                   | otherwise       = Walkable (x,y) t (cut' ((x,y):cs) up) (cut' ((x,y):cs) right) (cut' ((x,y):cs) down) (cut' ((x,y):cs) left)
 
 toList :: WayTree -> [Coords]
-toList = const [(0,0)]
-
+toList (Walkable c Exit NotWalkable NotWalkable NotWalkable NotWalkable) = [c]
+toList (Walkable c _ n NotWalkable NotWalkable NotWalkable) = c:toList n
+toList (Walkable c _ NotWalkable n NotWalkable NotWalkable) = c:toList n
+toList (Walkable c _ NotWalkable NotWalkable n NotWalkable) = c:toList n
+toList (Walkable c _ NotWalkable NotWalkable NotWalkable n) = c:toList n
