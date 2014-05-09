@@ -8,3 +8,4 @@ data Tile = Start
 
 type Board = [[Tile]]
 
+type Coords = (Int, Int)
