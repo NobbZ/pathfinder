@@ -1,5 +1,7 @@
 module Main where
 
+import           Prelude            hiding (Left, Right)
+
 import           Control.Monad
 import           System.Directory
 import           System.Environment
