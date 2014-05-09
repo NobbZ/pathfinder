@@ -50,7 +50,13 @@ parseTile t = case t of
   ' ' -> Way
 
 growTree :: Board -> WayTree
-growTree = const (Walkable (0,0) Start NotWalkable NotWalkable NotWalkable NotWalkable)
+growTree b = (Walkable (findStart b) Start (growTree' b ((findStart b) +: Up)) (growTree' b ((findStart b) +: Right)) (growTree' b ((findStart b) +: Down)) (growTree' b ((findStart b) +: Left)))
+  -- const (Walkable (0,0) Start NotWalkable NotWalkable NotWalkable NotWalkable)
+  where
+    findStart b = head $ [(x,y) | x <- [0..length b], y <- [0..length (b!!x)], b!!x!!y == Start ]
+    growTree' b (x, y) | x < 0 || y < 0 = NotWalkable
+                       | b!!x!!y == Wall = NotWalkable
+                       | otherwise    = Walkable (x,y) (b!!x!!y) (growTree' b ((x,y) +: Up)) (growTree' b ((x,y) +: Right)) (growTree' b ((x,y) +: Down)) (growTree' b ((x,y) +: Left))
 
 cut :: WayTree -> WayTree
 cut = id
