@@ -1,0 +1,3 @@
+[submodule "boards"]
+	path = boards
+	url = git@github.com:NobbZ/pathfinder_boards.git
