@@ -4,7 +4,7 @@ data Tile = Start
           | Exit
           | Wall
           | Way
-          deriving (Show)
+          deriving (Show, Eq)
 
 type Board = [[Tile]]
 
