@@ -3,6 +3,7 @@ module Main where
 import           Prelude            hiding (Left, Right)
 
 import           Control.Monad
+import           Data.Tree
 import           System.Directory
 import           System.Environment
 import           System.Exit
@@ -50,26 +51,42 @@ parseTile t = case t of
   ' ' -> Way
 
 growTree :: Board -> WayTree
-growTree b = (Walkable (findStart b) Start (growTree' b ((findStart b) +: Up)) (growTree' b ((findStart b) +: Right)) (growTree' b ((findStart b) +: Down)) (growTree' b ((findStart b) +: Left)))
-  -- const (Walkable (0,0) Start NotWalkable NotWalkable NotWalkable NotWalkable)
+growTree b = Node (Walkable (findStart b) Start) (map (growTree' b (findStart b)) [Up, Right, Down, Left] )
   where
-    findStart b = head $ [(x,y) | x <- [0..length b], y <- [0..length (b!!x)], b!!x!!y == Start ]
-    growTree' b (x, y) | x < 0 || y < 0 = NotWalkable
-                       | b!!x!!y == Wall = NotWalkable
-                       | otherwise    = Walkable (x,y) (b!!x!!y) (growTree' b ((x,y) +: Up)) (growTree' b ((x,y) +: Right)) (growTree' b ((x,y) +: Down)) (growTree' b ((x,y) +: Left))
+    findStart b = head $ [(x,y) | x <- [0..length b], y <- [0..length (b!!x)], b!!x!!y == Start]
+    growTree' b (x,y) dir | x' < 0 || y' < 0 = Node (NotWalkable (x',y')) []
+                          | b!!x'!!y' == Wall = Node (NotWalkable (x',y')) []
+                          | otherwise = Node (Walkable (x',y') (b!!x'!!y')) (map (growTree' b (x',y')) [Up, Right, Down, Left] )
+      where (x',y') = (x,y) +: dir
 
 cut :: WayTree -> WayTree
-cut (Walkable c Start up right down left) = Walkable c Start (cut' [c] up) (cut' [c] right) (cut' [c] down) (cut' [c] left)
+cut (Node (Walkable c Start) dirs) = cut'' (Node (Walkable c Start) (map (cut' [c]) dirs))
   where
-    cut' _ (NotWalkable) = NotWalkable
-    cut' _ (Walkable c Exit _ _ _ _) = Walkable c Exit NotWalkable NotWalkable NotWalkable NotWalkable
-    cut' cs (Walkable (x,y) t up right down left) | x < 0 || y < 0  = NotWalkable
-                                                  | (x,y) `elem` cs = NotWalkable
-                                                  | otherwise       = Walkable (x,y) t (cut' ((x,y):cs) up) (cut' ((x,y):cs) right) (cut' ((x,y):cs) down) (cut' ((x,y):cs) left)
+    cut' cs (Node (NotWalkable (x,y)) dirs) = Node (NotWalkable (x,y)) []
+    cut' cs (Node (Walkable (x,y) t) dirs) | x < 0 || y < 0 = Node { rootLabel = NotWalkable (x,y)
+                                                                   , subForest = []
+                                                                   }
+                                           | (x,y) `elem` cs = Node { rootLabel = NotWalkable (x,y)
+                                                                    , subForest = []
+                                                                    }
+                                           | otherwise = Node { rootLabel = Walkable (x,y) t
+                                                              , subForest = map (cut' ((x,y):cs)) dirs -- $ filter reachesExit dirs
+                                                              }
+    cut'' (Node (Walkable (x,y) t) dirs) = Node { rootLabel = Walkable (x,y) t
+                                                , subForest = filter reachesExit dirs
+                                                }
+    cut'' t = t
+
+reachesExit :: WayTree -> Bool
+reachesExit (Node (Walkable _ Exit) _) = True
+reachesExit (Node (NotWalkable _) _) = False
+reachesExit (Node (Walkable _ _) dirs) = or $ map reachesExit dirs
 
 toList :: WayTree -> [Coords]
-toList (Walkable c Exit NotWalkable NotWalkable NotWalkable NotWalkable) = [c]
-toList (Walkable c _ n NotWalkable NotWalkable NotWalkable) = c:toList n
-toList (Walkable c _ NotWalkable n NotWalkable NotWalkable) = c:toList n
-toList (Walkable c _ NotWalkable NotWalkable n NotWalkable) = c:toList n
-toList (Walkable c _ NotWalkable NotWalkable NotWalkable n) = c:toList n
+toList (Node (NotWalkable c) _) = []
+toList (Node (Walkable c Exit) _) = [c]
+toList (Node (Walkable c t) dirs) = c:toList (head $ filter isWalkable dirs)
+
+isWalkable :: WayTree -> Bool
+isWalkable (Node (NotWalkable _) _) = False
+isWalkable (Node (Walkable _ _) _)  = True

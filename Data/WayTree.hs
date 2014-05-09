@@ -1,16 +1,17 @@
 module Data.WayTree where
 
+import           Data.Tree
 import           Prelude    hiding (Left, Right)
 
 import           Data.Board
 
-data WayTree = Walkable Coords Tile
-               WayTree -- ^ Up
-               WayTree -- ^ Right
-               WayTree -- ^ Down
-               WayTree -- ^ Left
-             | NotWalkable
-             deriving (Show)
+data CellInfo = Walkable { getCoords :: Coords
+                         , getTile   :: Tile
+                         }
+              | NotWalkable { getCoords :: Coords }
+              deriving (Show)
+
+type WayTree = Tree CellInfo
 
 data Direction = Up
                | Right
