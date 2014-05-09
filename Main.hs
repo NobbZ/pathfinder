@@ -3,6 +3,7 @@ module Main where
 import           Prelude            hiding (Left, Right)
 
 import           Control.Monad
+import           Data.List
 import           Data.Tree
 import           System.Directory
 import           System.Environment
@@ -27,9 +28,17 @@ solve fp = do
   theBoard <- parseFile fp
   theTree <- liftM growTree $ return theBoard
   theWay <- liftM cut $ return theTree
-  thePath <- liftM toList $ return theWay
-  mapM (putStrLn . (\ (y,x) -> show x ++ "," ++ show y)) thePath
+  print theWay
+  thePathes <- liftM toList $ return theWay
+  print thePathes
+  -- thePath <- liftM (sortBy lengthOrdering) $ return thePathes
+  mapM (putStrLn . (\ (y,x) -> show x ++ "," ++ show y)) thePathes
   return ()
+
+lengthOrdering :: [a] -> [a] -> Ordering
+lengthOrdering l r | length l < length r     = LT
+                   | length l == length r     = EQ
+                   | otherwise = GT
 
 parseFile :: FilePath -> IO Board
 parseFile fp = do
@@ -63,6 +72,7 @@ cut :: WayTree -> WayTree
 cut (Node (Walkable c Start) dirs) = cut'' (Node (Walkable c Start) (map (cut' [c]) dirs))
   where
     cut' cs (Node (NotWalkable (x,y)) dirs) = Node (NotWalkable (x,y)) []
+    cut' cs (Node (Walkable (x,y) Exit) _) = Node (Walkable (x,y) Exit) []
     cut' cs (Node (Walkable (x,y) t) dirs) | x < 0 || y < 0 = Node { rootLabel = NotWalkable (x,y)
                                                                    , subForest = []
                                                                    }
@@ -85,7 +95,16 @@ reachesExit (Node (Walkable _ _) dirs) = or $ map reachesExit dirs
 toList :: WayTree -> [Coords]
 toList (Node (NotWalkable c) _) = []
 toList (Node (Walkable c Exit) _) = [c]
-toList (Node (Walkable c t) dirs) = c:toList (head $ filter isWalkable dirs)
+toList (Node (Walkable c t) dirs) = c:toList (head $ reverse $ sortBy depthOrd $ filter reachesExit $ filter isWalkable dirs)
+
+depthOrd :: Tree a -> Tree a -> Ordering
+depthOrd l r | depth l < depth r = LT
+             | depth l == depth r = EQ
+             | otherwise         = GT
+
+depth :: Tree a -> Int
+depth (Node _ []) = 0
+depth (Node _ ts) = 1 + maximum (map depth ts)
 
 isWalkable :: WayTree -> Bool
 isWalkable (Node (NotWalkable _) _) = False
