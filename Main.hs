@@ -27,16 +27,14 @@ solve fp = do
   theTree <- liftM growTree $ return theBoard
   theWay <- liftM cut $ return theTree
   thePath <- liftM toList $ return theWay
-  mapM print thePath
+  mapM (putStrLn . (\ (y,x) -> show x ++ "," ++ show y)) thePath
   return ()
 
 parseFile :: FilePath -> IO Board
 parseFile fp = do
   boardString <- readFile fp
   boardLines <- liftM lines $ return boardString
-  hPrint stderr boardLines
   boardBoard <- liftM parseBoard $ return boardLines
-  hPrint stderr boardBoard
   return boardBoard
 
 parseBoard :: [String] -> Board
