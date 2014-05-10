@@ -25,14 +25,8 @@ main = do
 solve :: FilePath -> IO ()
 solve fp = do
   putStrLn fp
-  theBoard <- parseFile fp
-  theTree <- liftM growTree $ return theBoard
-  theWay <- liftM cut $ return theTree
-  print theWay
-  thePathes <- liftM toList $ return theWay
-  print thePathes
-  -- thePath <- liftM (sortBy lengthOrdering) $ return thePathes
-  mapM (putStrLn . (\ (y,x) -> show x ++ "," ++ show y)) thePathes
+  thePath <- liftM (toList . cut . growTree) $ parseFile fp
+  mapM (putStrLn . (\ (y,x) -> show x ++ "," ++ show y)) thePath
   return ()
 
 parseFile :: FilePath -> IO Board
