@@ -51,7 +51,7 @@ cabal-version:       >=1.10
 
 executable pathfinder
   -- .hs or .lhs file containing the Main module.
-  -- main-is:             
+  main-is: Main.hs            
   
   -- Modules included in this executable, other than Main.
   -- other-modules:       
@@ -60,11 +60,14 @@ executable pathfinder
   -- other-extensions:    
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.6 && <4.7
-  
+  build-depends:       base       >=4.6 && <4.7,
+                       containers >=0.5 && <0.6,
+                       directory  >=1.2 && <1.3
+
   -- Directories containing source files.
   -- hs-source-dirs:      
   
   -- Base language which the package is written in.
   default-language:    Haskell2010
   
+  ghc-options: -O2
