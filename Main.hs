@@ -90,12 +90,12 @@ cut (Node (Walkable c Start) dirs) = cut'' (Node (Walkable c Start) (map (cut' [
 reachesExit :: WayTree -> Bool
 reachesExit (Node (Walkable _ Exit) _) = True
 reachesExit (Node (NotWalkable _) _) = False
-reachesExit (Node (Walkable _ _) dirs) = or $ map reachesExit dirs
+reachesExit (Node (Walkable _ _) dirs) = any reachesExit dirs
 
 toList :: WayTree -> [Coords]
 toList (Node (NotWalkable c) _) = []
 toList (Node (Walkable c Exit) _) = [c]
-toList (Node (Walkable c t) dirs) = c:toList (head $ reverse $ sortBy depthOrd $ filter reachesExit $ filter isWalkable dirs)
+toList (Node (Walkable c t) dirs) = c:toList ((tail . sortBy depthOrd) . filter reachesExit $ filter isWalkable dirs)
 
 depthOrd :: Tree a -> Tree a -> Ordering
 depthOrd l r | depth l < depth r = LT
