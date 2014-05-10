@@ -35,11 +35,6 @@ solve fp = do
   mapM (putStrLn . (\ (y,x) -> show x ++ "," ++ show y)) thePathes
   return ()
 
-lengthOrdering :: [a] -> [a] -> Ordering
-lengthOrdering l r | length l < length r     = LT
-                   | length l == length r     = EQ
-                   | otherwise = GT
-
 parseFile :: FilePath -> IO Board
 parseFile fp = do
   boardString <- readFile fp
