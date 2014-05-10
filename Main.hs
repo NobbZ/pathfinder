@@ -95,7 +95,7 @@ reachesExit (Node (Walkable _ _) dirs) = any reachesExit dirs
 toList :: WayTree -> [Coords]
 toList (Node (NotWalkable c) _) = []
 toList (Node (Walkable c Exit) _) = [c]
-toList (Node (Walkable c t) dirs) = c:toList ((tail . sortBy depthOrd) . filter reachesExit $ filter isWalkable dirs)
+toList (Node (Walkable c t) dirs) = c:toList ((last . sortBy depthOrd) . filter reachesExit $ filter isWalkable dirs)
 
 depthOrd :: Tree a -> Tree a -> Ordering
 depthOrd l r | depth l < depth r = LT
