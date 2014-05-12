@@ -30,11 +30,7 @@ solve fp = do
   return ()
 
 parseFile :: FilePath -> IO Board
-parseFile fp = do
-  boardString <- readFile fp
-  boardLines <- liftM lines $ return boardString
-  boardBoard <- liftM parseBoard $ return boardLines
-  return boardBoard
+parseFile fp = liftM (parseBoard . lines) $ readFile fp
 
 parseBoard :: [String] -> Board
 parseBoard [[]]   = []
